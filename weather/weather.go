@@ -2,6 +2,7 @@ package weather
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,14 +14,13 @@ import (
 func GetWeather(geo geo.GeoData, format int) string {
 	envUrl := os.Getenv("WEATHER_URL")
 	baseUrl, err := url.Parse(envUrl + geo.City)
-
 	if err != nil {
 		output.PrintError("Некорректный URL сервиса погоды", err)
 		return ""
 	}
 
 	params := url.Values{}
-	params.Add("format", string(format))
+	params.Add("format", fmt.Sprint(format))
 	baseUrl.RawQuery = params.Encode()
 
 	resp, err := http.Get(baseUrl.String())
@@ -28,6 +28,7 @@ func GetWeather(geo geo.GeoData, format int) string {
 		output.PrintError("Ошибка запроса погоды", err)
 		return ""
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		err := errors.New(resp.Status)
@@ -41,5 +42,4 @@ func GetWeather(geo geo.GeoData, format int) string {
 		return ""
 	}
 	return string(body)
-
 }

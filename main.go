@@ -16,7 +16,7 @@ func main() {
 		output.PrintError("Не удалосб загрузить переменные окружения", err)
 	}
 	city := flag.String("city", "", "Город пользователя")
-	format := flag.Int("format", 1, "Формат вывода погоды")
+	format := flag.Int("format", 2, "Формат вывода погоды")
 	flag.Parse()
 	geoData, err := geo.GetMyLocation(*city)
 	if err != nil {
