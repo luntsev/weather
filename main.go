@@ -3,11 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
 	"weather/geo"
 	"weather/output"
 	"weather/weather"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 		output.PrintError("Не удалось определить геолокацию", err)
 	}
 
-	weatherData := weather.GetWeather(*geoData, *format)
+	weatherData, _ := weather.GetWeather(*geoData, *format)
 
 	fmt.Println(weatherData)
 }

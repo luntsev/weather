@@ -15,11 +15,21 @@ type GeoData struct {
 	City string `json:"city"`
 }
 
+type cityPopulationResponse struct {
+	Err bool `json:"error"`
+}
+
+var ErrNoCity = errors.New("no city")
+var ErrBadGeoUrl = errors.New("error with parse geo url")
+
 func GetMyLocation(city string) (*GeoData, error) {
 
 	geoData := &GeoData{}
 
-	if city != "" && CheckCity(city) {
+	if city != "" {
+		if !checkCity(city) {
+			return nil, ErrNoCity
+		}
 		geoData.City = city
 		return geoData, nil
 	}
@@ -28,7 +38,8 @@ func GetMyLocation(city string) (*GeoData, error) {
 	geoUrl := os.Getenv("GEO_URL")
 	_, err := url.Parse(geoUrl)
 	if err != nil {
-		output.PrintError("URL сервиса определения геолокации по IP в переменных окружения некорректен", err)
+		output.PrintError("URL сервиса определения геолокации по IP в переменных окружения некорректен", ErrBadGeoUrl)
+		return nil, ErrBadGeoUrl
 	}
 
 	resp, err := http.Get(geoUrl)
@@ -59,11 +70,7 @@ func GetMyLocation(city string) (*GeoData, error) {
 	return geoData, nil
 }
 
-type cityPopulationResponse struct {
-	Err bool `json:"error"`
-}
-
-func CheckCity(city string) bool {
+func checkCity(city string) bool {
 	postBody, err := json.Marshal(map[string]string{
 		"city": city,
 	})
@@ -74,8 +81,8 @@ func CheckCity(city string) bool {
 	}
 
 	envUrl := os.Getenv("CHECK_CITY_URL")
-	if err != nil {
-		output.PrintWarning("Некорректный URL сервиса проверки города", err)
+	if envUrl == "" {
+		output.PrintWarning("Не удалось определить URL для проверки города", err)
 		return false
 	}
 
